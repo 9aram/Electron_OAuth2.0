@@ -3,17 +3,97 @@
   <head>
     <meta charset="UTF-8">
     <title>Hello World!</title>
+    <script> function init() {
+        console.log("로드되었습닏나.")
+    }</script>
   </head>
-  <body>
-    <h1>Hello World!</h1>
-    <!-- All of the Node.js APIs are available in this renderer process. -->
-    We are using Node.js <script>document.write(process.versions.node)</script>,
-    Chromium <script>document.write(process.versions.chrome)</script>,
-    and Electron <script>document.write(process.versions.electron)</script>.
+
+  <body onload="init();">
+    <h1>로그인페이지</h1>
+
+    <!--<button id="auth2"> Login with GitHub</button>-->
+    <input type="button" id="auth2" value="Login with GitHub">
+    <p id="myParagraph"></p>
+
 
     <script>
       // You can also require other files to run in this process
       require('./renderer.js')
+
+
+      function checkLoginStatus() {
+          var loginBtn = document.querySelector('#loginBtn');
+          var nameTxt = document.querySelector('#name');
+
+          if (gauth.isSignedIn.get()) {
+              console.log("logined");
+              loginBtn.value = 'Logout'
+              var profile=gauth.currentUser.get().getBasicProfile();
+              nameTxt.innerHTML='Welcome <strong>'+profile.getName()+'</strong>'
+          }
+          else {
+              console.log("loged out");
+              loginBtn.value = 'Login'
+              nameTxt.innerHTML='';
+          }
+      }
+
+
     </script>
+    <span id="name"></span>
+
+    <!--<input type="button" id="loginBtn" value="checking.." onclick="-->
+<!--if(this.value==='Login'){-->
+<!--gauth.signIn().then(function() {-->
+     <!--console.log('gauth.signIn()');-->
+    <!--// checkLoginStatus();-->
+<!--});-->
+<!--}-->
+<!--else {-->
+<!--gauth.signOut().then(function() {-->
+   <!--console.log('gauth.signOut()');-->
+   <!--//checkLoginStatus();-->
+<!--});-->
+<!--}-->
+<!--">-->
+
+
+    <script>
+
+        const { ipcRenderer } = require('electron');
+
+        const button = document.getElementById('auth2');
+        console.log('BUTTON: ', button)
+        button.addEventListener('click', function(event) {
+            console.log('clicked...');
+            ipcRenderer.send("request-auth");
+            // ipcRenderer.send("did-get-redirect-request");
+
+        });
+
+        ipcRenderer.on('github-oauth-reply', function(event){
+            console.log(event);
+        });
+        ipcRenderer.on("got-access-token", function(event, user){
+
+            var loginBtn = document.querySelector('#auth2');
+            var nameTxt = document.querySelector('#name');
+
+            if (user) {
+                console.log("logined");
+                loginBtn.value = 'Logout'
+                nameTxt.innerHTML='Welcome <strong>'+user+'</strong>'
+            }
+            else {
+                console.log("loged out");
+                loginBtn.value = 'Login'
+                nameTxt.innerHTML='';
+            }
+
+           // document.getElementById("myParagraph").innerText = acce;
+
+        });
+    </script>
+
   </body>
 </html>
